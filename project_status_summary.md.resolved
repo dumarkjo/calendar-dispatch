@@ -1,0 +1,64 @@
+# AMTEC Calendar Dispatch: Project Status Summary
+
+This document outlines the current state of the application, summarizing what has been fully built, what was just implemented, and the remaining features to be developed.
+
+---
+
+## ✅ Implemented (Completed Phases)
+
+### 1. Core Architecture & Authentication
+- **Tech Stack:** Next.js (App Router), TypeScript, Tailwind CSS, Supabase (PostgreSQL + Auth).
+- **Role-Based Access:** Logins split into `admin_scheduler`, `mechanical_lab`, `staff`, and `pending_verification`.
+- **Public & Private Routing:** Public calendar exists, but dispatch creation and workload editing require specific admin/staff roles.
+
+### 2. Comprehensive Database Schema
+- **Master Directories:** Profiles, Staff, Companies, Instruments, and Machine-to-Instrument mappings (`machine_instrument_defaults`).
+- **Dispatch Tracking:** `dispatches` table linked relationally to assigned staff, instruments taken, machines tested, and itinerary.
+
+### 3. Dynamic Dispatch Creation Form (`/dispatch/new`)
+- **Smart Auto-Population:** Selecting a company auto-fills contact info. Selecting a machine auto-adds the explicitly required instruments (handling complex duplicate/split items).
+- **Personnel Split:** Explicitly separated **Lead Engineer** (Radio - required 1) from **Assistant Engineers** (Checkboxes) and Technicians.
+- **Contact Split:** Contact info cleanly separated into **Contact Person** and **Contact Number**.
+
+### 4. Advanced Workload Calendar (`/workload-view`)
+- **AMTEC Spreadsheet Layout:** Replicated the physical tracking sheet format (Name, Travel Days, Report Workload, Machines Tested).
+- **Legend & Color Coding:** Implemented exact color styling mappings:
+  - 🟨 **Yellow:** Scheduled (With dispatch)
+  - 🔵 **Blue:** No dispatch yet
+  - ⬜ **Gray:** Day Off / Leave / Offset
+  - 🟩 **Green with Markers:** S (Scheduler), W (WFH), M (Meeting Main), m (Email)
+  - 🟢 **Dark Green:** Trip accomplished (✓)
+  - 🟣 **Violet:** No Pasok (Holiday)
+- **Admin Manual Editing:** Admins can click any non-dispatch cell to assign Day Off / Events manually, persisting to a `staff_calendar_events` table.
+- **Dispatch List Table:** Comprehensive 14-column dispatch summary list generated beneath the calendar grid.
+
+---
+
+## 🔄 Ongoing / Recently Implemented
+
+We just finalized strict **Dispatch Form Restrictions**:
+1. **No Past Dates:** The system performs a hard block if a user attempts to schedule a dispatch with a Departure or Arrival date in the past (before today).
+2. **Double-Booking Prevention:** Originally a soft-warning, the conflict checker now places a **hard block** to prevent assigning any Engineer or Technician who is already dispatched on overlapping dates. (Instrument overlap remains a soft-warning/confirm dialog in case a single tool is shared).
+
+*Note: The system builds successfully with these new restrictions applied (`exit code 0`).*
+
+---
+
+## 🚀 To Be Done (Next Steps & Future Enhancements)
+
+While the core scheduling cycle is complete, here is what needs to be tackled next:
+
+### 1. Update the Edit Page UI (`/dispatches/[id]/edit`)
+- **Priority:** High
+- **Task:** The "Edit Dispatch" form needs to be updated to match the new UI mechanics of the "Create Dispatch" form. This includes the new Radio/Checkbox split for Lead/Assistant engineers and the newly split Contact Person/Contact Number fields.
+
+### 2. Document/PDF Generation
+- **Priority:** Medium
+- **Task:** Integrate the planned `generate_dispatch_pdf.py` script (or equivalent Next.js native PDF library) to generate the official printable AMTEC dispatch PDF tickets.
+
+### 3. Email Notifications
+- **Priority:** Low / External Service
+- **Task:** Send automated email alerts to staff members when they are added to or removed from a dispatch schedule.
+
+### 4. Technical Debt Maintenance
+- **Task:** Migrate the Next.js [middleware.ts](file:///C:/Users/ASUS_PC/Desktop/CODE/MJ/calendar-dispatch/middleware.ts) to `proxy` configurations to prevent Next.js 16 deprecation warnings.
