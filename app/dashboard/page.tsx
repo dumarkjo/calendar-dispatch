@@ -190,7 +190,7 @@ export default function DashboardPage() {
       <div className="p-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: theme.accent }}>
               Dashboard
@@ -202,7 +202,7 @@ export default function DashboardPage() {
           </div>
           {isScheduler && (
             <Link href="/dispatch/new"
-              className="px-5 py-2.5 rounded-lg text-sm font-bold transition-all hover:opacity-90"
+              className="px-5 py-2.5 rounded-lg text-sm font-bold transition-all hover:opacity-90 self-start sm:self-auto"
               style={{ background: theme.primary, color: "white" }}>
               + New Dispatch
             </Link>
@@ -232,8 +232,8 @@ export default function DashboardPage() {
         )}
 
         {/* ──────────────────── CALENDAR (calendar-view style) ──────────────────── */}
-        <div className="flex gap-6 mb-6">
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="flex flex-col lg:flex-row gap-6 mb-6">
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
             {/* Calendar header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <h2 className="text-lg font-black text-gray-900">
@@ -325,7 +325,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Side panel */}
-          <div className="w-72 shrink-0">
+          <div className="w-full lg:w-72 shrink-0">
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden sticky top-8">
               <div className="px-4 py-3 border-b border-gray-100" style={{ background: "#F8F9FB" }}>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500">

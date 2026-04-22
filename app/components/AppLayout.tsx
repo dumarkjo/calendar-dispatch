@@ -11,7 +11,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
   const [ready, setReady] = useState(false);
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true); // Default to collapsed for mobile-first
+
+  useEffect(() => {
+    // Expand on desktop by default
+    if (window.innerWidth >= 768) {
+      setCollapsed(false);
+    }
+  }, []);
 
   useEffect(() => {
     async function load() {
@@ -45,11 +52,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-screen" style={{ background: "#F4F6FB", ...cssVars }}>
       <Sidebar email={email} role={role} collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
-      <main className="flex-1 min-h-screen transition-all duration-300"
-        style={{ marginLeft: collapsed ? 72 : 256 }}>
-        {typeof children === "function"
-          ? (children as (role: string) => React.ReactNode)(role)
-          : children}
+      <main className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full max-w-full overflow-x-hidden ${collapsed ? "md:ml-[72px]" : "md:ml-[256px]"}`}>
+        
+        {/* Mobile Header */}
+        <div className="md:hidden flex items-center justify-between p-4 bg-white border-b border-gray-200 sticky top-0 z-20">
+          <div className="flex items-center gap-2">
+            <img src="/amtec-logo.png" alt="AMTEC" className="w-8 h-8 object-contain" />
+            <span className="font-bold text-gray-800 text-sm">AMTEC</span>
+          </div>
+          <button onClick={() => setCollapsed(false)} className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        <div className="flex-1">
+          {typeof children === "function"
+            ? (children as (role: string) => React.ReactNode)(role)
+            : children}
+        </div>
       </main>
     </div>
   );

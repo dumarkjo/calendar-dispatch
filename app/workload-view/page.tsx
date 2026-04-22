@@ -465,7 +465,7 @@ export default function WorkloadViewPage() {
 
       <div className="p-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
           <div>
             <h1 className="text-xl font-black text-gray-900">
               {MONTHS[month - 1]} {year} — Workload Calendar
@@ -486,7 +486,7 @@ export default function WorkloadViewPage() {
         </div>
 
         {isAdmin && (
-          <div className="mb-4 bg-white border border-blue-100 rounded-xl p-3 shadow-sm flex items-center justify-between">
+          <div className="mb-4 bg-white border border-blue-100 rounded-xl p-3 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-1 rounded-full text-xs font-black uppercase tracking-wider bg-blue-100 text-blue-900 shadow-inner">
                 {selectedCells.size > 0 ? `${selectedCells.size} Selected` : "✏️ Edit Mode Active"}

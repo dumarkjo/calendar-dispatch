@@ -90,12 +90,20 @@ export default function Sidebar({ email, role, collapsed, onToggle }: SidebarPro
   }
 
   return (
-    <aside
-      className="fixed top-0 left-0 h-screen flex flex-col z-40 transition-all duration-300"
-      style={{
-        width: collapsed ? 72 : 256,
-        background: `linear-gradient(180deg, ${theme.sidebarFrom} 0%, ${theme.sidebarTo} 100%)`,
-      }}>
+    <>
+      {/* Mobile backdrop */}
+      {!collapsed && (
+        <div 
+          className="fixed inset-0 bg-black/50 z-40 md:hidden transition-opacity" 
+          onClick={onToggle}
+        />
+      )}
+      <aside
+        className={`fixed top-0 left-0 h-screen flex flex-col z-50 transition-all duration-300 
+          ${collapsed ? "-translate-x-full md:translate-x-0 md:w-[72px]" : "translate-x-0 w-[256px]"}`}
+        style={{
+          background: `linear-gradient(180deg, ${theme.sidebarFrom} 0%, ${theme.sidebarTo} 100%)`,
+        }}>
 
       {/* Logo area + toggle */}
       <div className="px-3 py-4 border-b flex items-center justify-between" style={{ borderColor: `${theme.accent}4D` }}>
@@ -111,12 +119,12 @@ export default function Sidebar({ email, role, collapsed, onToggle }: SidebarPro
           </div>
         )}
         {collapsed && (
-          <div className="flex items-center justify-center w-full">
+          <div className="hidden md:flex items-center justify-center w-full">
             <img src="/amtec-logo.png" alt="AMTEC" className="w-8 h-8 object-contain" />
           </div>
         )}
         <button onClick={onToggle}
-          className="w-7 h-7 flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
+          className="w-7 h-7 hidden md:flex items-center justify-center rounded-md hover:bg-white/10 transition-colors"
           style={{ color: "rgba(255,255,255,0.6)" }}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}>
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -238,6 +246,7 @@ export default function Sidebar({ email, role, collapsed, onToggle }: SidebarPro
           {!collapsed && <span>Logout</span>}
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

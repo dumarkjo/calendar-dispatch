@@ -179,11 +179,11 @@ export default function CalendarViewPage() {
         </div>
       </div>
 
-      <div className="flex h-[calc(100vh-56px)]">
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-56px)] overflow-hidden">
         {/* ── LEFT: Calendar ─────────────────────────────────────────────────── */}
         <div className="flex-1 p-6 overflow-y-auto">
           {/* Month nav */}
-          <div className="flex items-center justify-between mb-5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-5 gap-4">
             <div>
               <h1 className="text-2xl font-black text-gray-900">
                 {MONTHS[month]} {year}
@@ -303,7 +303,7 @@ export default function CalendarViewPage() {
         </div>
 
         {/* ── RIGHT: Detail panel ─────────────────────────────────────────────── */}
-        <div className="w-96 border-l border-gray-200 flex flex-col overflow-hidden"
+        <div className="w-full lg:w-96 border-t lg:border-t-0 lg:border-l border-gray-200 flex flex-col flex-shrink-0 lg:h-full h-1/2 lg:min-h-0"
           style={{ background: "white" }}>
           {selectedDispatch ? (
             // ── Dispatch detail ──────────────────────────────────────────────

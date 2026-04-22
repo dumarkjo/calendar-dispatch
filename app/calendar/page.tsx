@@ -134,7 +134,7 @@ export default function CalendarPage() {
       <div className="p-8">
 
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-widest mb-1" style={{ color: "#F5A623" }}>
               Schedule
@@ -144,7 +144,7 @@ export default function CalendarPage() {
           </div>
           {(role === "admin_scheduler" || role === "AMaTS") && (
             <Link href="/dispatch/new"
-              className="px-5 py-2.5 rounded-lg text-sm font-bold transition-all hover:opacity-90"
+              className="px-5 py-2.5 rounded-lg text-sm font-bold transition-all hover:opacity-90 self-start sm:self-auto"
               style={{ background: "#1B2A6B", color: "white" }}>
               + New Dispatch
             </Link>
@@ -160,13 +160,13 @@ export default function CalendarPage() {
         )}
 
         {/* Calendar + Side panel */}
-        <div className="flex gap-6">
+        <div className="flex flex-col lg:flex-row gap-6">
 
           {/* Calendar */}
-          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+          <div className="flex-1 bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden overflow-x-auto">
 
             {/* Calendar toolbar */}
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 px-5 py-4 border-b border-gray-100">
               <div className="flex items-center gap-2">
                 <button onClick={() => navigate(-1)}
                   className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 text-sm">‹</button>
@@ -174,9 +174,9 @@ export default function CalendarPage() {
                   className="px-3 py-1 rounded-lg text-xs font-semibold hover:bg-gray-100 text-gray-600">Today</button>
                 <button onClick={() => navigate(1)}
                   className="w-7 h-7 flex items-center justify-center rounded-lg text-gray-500 hover:bg-gray-100 text-sm">›</button>
-                <span className="text-sm font-bold text-gray-800 ml-1">{headerLabel}</span>
+                <span className="text-sm font-bold text-gray-800 ml-1 whitespace-nowrap">{headerLabel}</span>
               </div>
-              <div className="flex rounded-lg overflow-hidden border border-gray-200">
+              <div className="flex rounded-lg overflow-hidden border border-gray-200 self-start sm:self-auto">
                 <button onClick={() => setView("month")}
                   className="px-4 py-1.5 text-xs font-semibold transition-all"
                   style={view === "month" ? { background: "#1B2A6B", color: "white" } : { background: "white", color: "#6B7280" }}>
@@ -271,7 +271,7 @@ export default function CalendarPage() {
           </div>
 
           {/* Side panel */}
-          <div className="w-64 shrink-0">
+          <div className="w-full lg:w-64 shrink-0">
             <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden sticky top-8">
               <div className="px-4 py-3 border-b border-gray-100" style={{ background: "#F8F9FB" }}>
                 <h2 className="text-xs font-bold uppercase tracking-widest text-gray-500">

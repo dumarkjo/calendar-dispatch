@@ -161,12 +161,12 @@ export default function DispatchListPage() {
         <div className="max-w-6xl mx-auto px-6 py-10">
 
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Dispatches</h1>
               <p className="text-sm text-gray-500 mt-1">{dispatches.length} total records</p>
             </div>
-            <div className="flex gap-3">
+            <div className="flex flex-wrap gap-3">
               <Link href="/dashboard"
                 className="px-4 py-2 text-sm border border-gray-300 rounded hover:bg-gray-100 text-gray-700">
                 ← Dashboard
@@ -182,7 +182,7 @@ export default function DispatchListPage() {
           </div>
 
           {/* Search + Filter */}
-          <div className="flex gap-3 mb-4">
+          <div className="flex flex-col sm:flex-row gap-3 mb-4">
             <input
               type="text"
               placeholder="Search by dispatch #, company, or location..."

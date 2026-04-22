@@ -428,7 +428,7 @@ export default function NewDispatchPage() {
         <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
 
           {/* Tab Bar */}
-          <div className="flex border-b border-gray-200" style={{ background: "#F8F9FB" }}>
+          <div className="flex border-b border-gray-200 overflow-x-auto whitespace-nowrap" style={{ background: "#F8F9FB" }}>
             {tabs.map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 className="px-6 py-3.5 text-xs font-bold uppercase tracking-widest transition-all"
