@@ -24,3 +24,16 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Ensure placeholders are clearly visible on white backgrounds */
+::placeholder {
+  color: #6B7280 !important; /* Tailwind gray-500 */
+  opacity: 1 !important;     /* Override Firefox's default placeholder opacity */
+}
+::-webkit-input-placeholder {
+  color: #6B7280 !important;
+}
+::-moz-placeholder {
+  color: #6B7280 !important;
+  opacity: 1 !important;
+}

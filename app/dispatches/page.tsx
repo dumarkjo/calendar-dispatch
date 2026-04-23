@@ -13,6 +13,7 @@ type Dispatch = {
   date_to: string | null;
   transport_mode: string | null;
   created_at: string;
+  created_by_role?: string | null;
   type: string;
   location: string;
   dispatch_assignments: {
@@ -73,10 +74,25 @@ export default function DispatchListPage() {
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [monthFilter, setMonthFilter] = useState<string>("all");
+  const [creatorFilter, setCreatorFilter] = useState<string>("all");
+  const [personnelFilter, setPersonnelFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("date_desc");
+  
   const [role, setRole] = useState("");
   const [token, setToken] = useState("");
   const [noAssignments, setNoAssignments] = useState(false);
   const [exportingId, setExportingId] = useState<string | null>(null);
+
+  const uniquePersonnel = useMemo(() => {
+    const names = new Set<string>();
+    dispatches.forEach(d => {
+      d.dispatch_assignments?.forEach(a => {
+        if (a.staff?.full_name) names.add(a.staff.full_name);
+      });
+    });
+    return Array.from(names).sort();
+  }, [dispatches]);
 
   useEffect(() => {
     async function load() {
@@ -137,16 +153,56 @@ export default function DispatchListPage() {
     }
   }
 
-  const filtered = dispatches.filter((d) => {
+  let filtered = dispatches.filter((d) => {
     const q = search.toLowerCase();
     const matchesSearch =
       d.dispatch_number?.toLowerCase().includes(q) ||
       d.company_name?.toLowerCase().includes(q) ||
       d.location?.toLowerCase().includes(q);
+      
     const matchesStatus =
       statusFilter === "all" ||
       getDispatchStatus(d.date_from, d.date_to) === statusFilter;
-    return matchesSearch && matchesStatus;
+      
+    const matchesMonth = 
+      monthFilter === "all" || 
+      (d.date_from && parseInt(d.date_from.split("-")[1], 10).toString() === monthFilter);
+      
+    const matchesCreator = 
+      creatorFilter === "all" || 
+      d.created_by_role === creatorFilter;
+      
+    const matchesPersonnel = 
+      personnelFilter === "all" || 
+      d.dispatch_assignments?.some(a => a.staff?.full_name === personnelFilter);
+
+    return matchesSearch && matchesStatus && matchesMonth && matchesCreator && matchesPersonnel;
+  });
+
+  filtered = filtered.sort((a, b) => {
+    if (sortBy === "date_desc") {
+      return (b.date_from || "").localeCompare(a.date_from || "");
+    }
+    if (sortBy === "date_asc") {
+      return (a.date_from || "").localeCompare(b.date_from || "");
+    }
+    if (sortBy === "dispatch_asc") {
+      return (a.dispatch_number || "").localeCompare(b.dispatch_number || "");
+    }
+    if (sortBy === "dispatch_desc") {
+      return (b.dispatch_number || "").localeCompare(a.dispatch_number || "");
+    }
+    if (sortBy === "engineers_asc") {
+      const eA = a.dispatch_assignments?.filter(x => ["lead_engineer", "assistant_engineer"].includes(x.assignment_type)).map(x => x.staff?.initials).join("") || "";
+      const eB = b.dispatch_assignments?.filter(x => ["lead_engineer", "assistant_engineer"].includes(x.assignment_type)).map(x => x.staff?.initials).join("") || "";
+      return eA.localeCompare(eB);
+    }
+    if (sortBy === "technicians_asc") {
+      const tA = a.dispatch_assignments?.filter(x => x.assignment_type === "technician").map(x => x.staff?.initials).join("") || "";
+      const tB = b.dispatch_assignments?.filter(x => x.assignment_type === "technician").map(x => x.staff?.initials).join("") || "";
+      return tA.localeCompare(tB);
+    }
+    return 0;
   });
 
   if (loading) return (
@@ -181,24 +237,78 @@ export default function DispatchListPage() {
             </div>
           </div>
 
-          {/* Search + Filter */}
-          <div className="flex flex-col sm:flex-row gap-3 mb-4">
-            <input
-              type="text"
-              placeholder="Search by dispatch #, company, or location..."
-              className="flex-1 border border-gray-300 rounded px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-            <select
-              className="border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={statusFilter}
-              onChange={e => setStatusFilter(e.target.value)}>
-              <option value="all">All Statuses</option>
-              <option value="Scheduled">Scheduled</option>
-              <option value="Ongoing">Ongoing</option>
-              <option value="Completed">Completed</option>
-            </select>
+          {/* Filters & Sorting */}
+          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm mb-6 flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row gap-3">
+              <input
+                type="text"
+                placeholder="Search by dispatch #, company, or location..."
+                className="flex-1 border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <select
+                className="border border-gray-300 rounded px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={sortBy}
+                onChange={e => setSortBy(e.target.value)}>
+                <option value="date_desc">Sort: Date (Newest First)</option>
+                <option value="date_asc">Sort: Date (Oldest First)</option>
+                <option value="dispatch_asc">Sort: Dispatch # (A-Z)</option>
+                <option value="dispatch_desc">Sort: Dispatch # (Z-A)</option>
+                <option value="engineers_asc">Sort: Engineers (A-Z)</option>
+                <option value="technicians_asc">Sort: Technicians (A-Z)</option>
+              </select>
+            </div>
+            
+            <div className="flex flex-wrap gap-3">
+              <select
+                className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={statusFilter}
+                onChange={e => setStatusFilter(e.target.value)}>
+                <option value="all">Status: All</option>
+                <option value="Scheduled">Scheduled</option>
+                <option value="Ongoing">Ongoing</option>
+                <option value="Completed">Completed</option>
+              </select>
+
+              <select
+                className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={monthFilter}
+                onChange={e => setMonthFilter(e.target.value)}>
+                <option value="all">Month: All</option>
+                <option value="1">January</option>
+                <option value="2">February</option>
+                <option value="3">March</option>
+                <option value="4">April</option>
+                <option value="5">May</option>
+                <option value="6">June</option>
+                <option value="7">July</option>
+                <option value="8">August</option>
+                <option value="9">September</option>
+                <option value="10">October</option>
+                <option value="11">November</option>
+                <option value="12">December</option>
+              </select>
+
+              <select
+                className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={creatorFilter}
+                onChange={e => setCreatorFilter(e.target.value)}>
+                <option value="all">Created By: All</option>
+                <option value="AMaTS">AMaTS</option>
+                <option value="admin_scheduler">Scheduler</option>
+              </select>
+
+              <select
+                className="border border-gray-300 rounded px-3 py-1.5 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                value={personnelFilter}
+                onChange={e => setPersonnelFilter(e.target.value)}>
+                <option value="all">Personnel: All</option>
+                {uniquePersonnel.map(name => (
+                  <option key={name} value={name}>{name}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Table */}

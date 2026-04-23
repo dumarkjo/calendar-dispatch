@@ -383,7 +383,7 @@ export default function WorkloadViewPage() {
     const newSel = new Set(baseSelected);
     for (let currentR = minR; currentR <= maxR; currentR++) {
       for (let currentC = minC; currentC <= maxC; currentC++) {
-        const pId = workload[currentR].id;
+        const pId = displayWorkload[currentR].id;
         const dayNum = currentC + 1;
         newSel.add(`${pId}_${dayNum}`);
       }
@@ -431,6 +431,7 @@ export default function WorkloadViewPage() {
 
   const engineers = workload.filter(w => w.role === "engineer");
   const technicians = workload.filter(w => w.role === "technician");
+  const displayWorkload = [...engineers, ...technicians];
 
   // Busy count per day
   const busyPerDay: Record<number, number> = {};
@@ -549,24 +550,24 @@ export default function WorkloadViewPage() {
         ) : (
           <>
             {/* ──────────────────── CALENDAR GRID ──────────────────── */}
-            <div className="bg-white rounded-xl border border-gray-300 overflow-auto shadow-sm mb-6"
+            <div className="bg-white rounded-xl border border-[#121212] overflow-auto shadow-sm mb-6"
               style={{ fontSize: "0.7rem" }}>
               <table className="border-collapse" style={{ minWidth: "100%" }}>
                 <thead>
                   <tr>
-                    <th className="sticky left-0 z-20 border-b border-r border-gray-300 px-3 py-2 text-left"
+                    <th className="sticky left-0 z-20 border-b border-r border-[#121212] px-3 py-2 text-left"
                       style={{ minWidth: 160, background: "#F8F9FB" }}>
                       <span className="text-xs font-bold text-gray-600">NAME</span>
                     </th>
-                    <th className="border-b border-r border-gray-300 px-1 py-2 text-center"
+                    <th className="border-b border-r border-[#121212] px-1 py-2 text-center"
                       style={{ minWidth: 40, background: "#F8F9FB" }}>
                       <span className="text-xs font-bold text-gray-600">TRAVEL<br/>DAYS</span>
                     </th>
-                    <th className="border-b border-r border-gray-300 px-1 py-2 text-center"
+                    <th className="border-b border-r border-[#121212] px-1 py-2 text-center"
                       style={{ minWidth: 40, background: "#F8F9FB" }}>
                       <span className="text-xs font-bold text-gray-600">REPORT<br/>WKLD</span>
                     </th>
-                    <th className="border-b border-r border-gray-300 px-1 py-2 text-center"
+                    <th className="border-b border-r border-[#121212] px-1 py-2 text-center"
                       style={{ minWidth: 40, background: "#F8F9FB" }}>
                       <span className="text-xs font-bold text-gray-600">MACH<br/>TESTED</span>
                     </th>
@@ -576,10 +577,10 @@ export default function WorkloadViewPage() {
                       const isToday = d === todayDay;
                       return (
                         <th key={d}
-                          className="border-b border-r border-gray-300 text-center py-1"
+                          className="border-b border-r border-[#121212] text-center py-1"
                           style={{
                             minWidth: 28, width: 28,
-                            background: isToday ? "#FEF3C7" : isWeekend ? "#F8F9FB" : "white",
+                            background: isToday ? "#FEF3C7" : isWeekend ? "#BEBEBE" : "white",
                           }}>
                           <div className="font-bold" style={{ color: isToday ? "#F59E0B" : isWeekend ? "#9CA3AF" : "#374151" }}>
                             {d}
@@ -596,7 +597,7 @@ export default function WorkloadViewPage() {
                   {/* Engineers */}
                   {engineers.length > 0 && (
                     <tr>
-                      <td colSpan={daysInMonth + 4} className="px-3 py-1 border-b border-gray-300"
+                      <td colSpan={daysInMonth + 4} className="px-3 py-1 border-b border-[#121212]"
                         style={{ background: "#EEF1FB" }}>
                         <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#1B2A6B" }}>
                           ● Testing Engineers ({engineers.length})
@@ -605,7 +606,7 @@ export default function WorkloadViewPage() {
                     </tr>
                   )}
                   {engineers.map((person, idx) => {
-                    const r = workload.findIndex(w => w.id === person.id);
+                    const r = idx;
                     return (
                       <StaffRow key={person.id} person={person} days={days} year={year} month={month}
                         r={r} idx={idx} todayDay={todayDay} onTooltip={setTooltip} events={events}
@@ -619,7 +620,7 @@ export default function WorkloadViewPage() {
                   {/* Technicians */}
                   {technicians.length > 0 && (
                     <tr>
-                      <td colSpan={daysInMonth + 4} className="px-3 py-1 border-b border-gray-300"
+                      <td colSpan={daysInMonth + 4} className="px-3 py-1 border-b border-[#121212]"
                         style={{ background: "#ECFDF5" }}>
                         <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#065F46" }}>
                           ● Technicians ({technicians.length})
@@ -628,7 +629,7 @@ export default function WorkloadViewPage() {
                     </tr>
                   )}
                   {technicians.map((person, idx) => {
-                    const r = workload.findIndex(w => w.id === person.id);
+                    const r = engineers.length + idx;
                     return (
                       <StaffRow key={person.id} person={person} days={days} year={year} month={month}
                         r={r} idx={idx} todayDay={todayDay} onTooltip={setTooltip} events={events}
@@ -641,11 +642,11 @@ export default function WorkloadViewPage() {
 
                   {/* Busy count footer */}
                   <tr style={{ background: "#F8F9FB" }}>
-                    <td className="sticky left-0 z-10 px-3 py-1.5 font-black text-gray-500 border-t border-gray-300 text-right"
+                    <td className="sticky left-0 z-10 px-3 py-1.5 font-black text-gray-500 border-t border-[#121212] text-right"
                       style={{ background: "#F8F9FB" }}>Busy:</td>
-                    <td className="border-t border-gray-300" colSpan={3} />
+                    <td className="border-t border-[#121212]" colSpan={3} />
                     {days.map(d => (
-                      <td key={d} className="border-t border-r border-gray-300 text-center py-1">
+                      <td key={d} className="border-t border-r border-[#121212] text-center py-1">
                         {busyPerDay[d] > 0 ? (
                           <span className="font-black" style={{ color: "#1B2A6B" }}>{busyPerDay[d]}</span>
                         ) : (
@@ -827,7 +828,7 @@ function StaffRow({ person, days, year, month, r, idx, todayDay, onTooltip, even
   return (
     <tr style={{ background: rowBg }}>
       {/* Name cell */}
-      <td className="sticky left-0 z-10 px-3 py-1.5 border-b border-r border-gray-300"
+      <td className="sticky left-0 z-10 px-3 py-0.5 border-b border-r border-[#121212]"
         style={{ background: rowBg, minWidth: 160 }}>
         <div className="flex items-center gap-2">
           <div className="w-5 h-5 rounded-full flex items-center justify-center font-black flex-shrink-0"
@@ -844,15 +845,15 @@ function StaffRow({ person, days, year, month, r, idx, todayDay, onTooltip, even
         </div>
       </td>
       {/* Stats columns */}
-      <td className="border-b border-r border-gray-300 text-center py-1.5 font-black"
+      <td className="border-b border-r border-[#121212] text-center py-0.5 font-black"
         style={{ color: person.travel_days > 0 ? "#1B2A6B" : "#9CA3AF" }}>
         {person.travel_days > 0 ? person.travel_days : "—"}
       </td>
-      <td className="border-b border-r border-gray-300 text-center py-1.5 font-bold"
+      <td className="border-b border-r border-[#121212] text-center py-0.5 font-bold"
         style={{ color: person.dispatch_count > 0 ? "#7C3AED" : "#9CA3AF" }}>
         {person.dispatch_count > 0 ? person.dispatch_count : "—"}
       </td>
-      <td className="border-b border-r border-gray-300 text-center py-1.5 font-bold"
+      <td className="border-b border-r border-[#121212] text-center py-0.5 font-bold"
         style={{ color: person.machine_count > 0 ? "#059669" : "#9CA3AF" }}>
         {person.machine_count > 0 ? person.machine_count : "—"}
       </td>
@@ -886,7 +887,7 @@ function StaffRow({ person, days, year, month, r, idx, todayDay, onTooltip, even
           cellMarker = et.marker ?? "";
           if (event.event_type === "half_day_morning") cellBorder = "1px solid #D1D5DB";
         } else {
-          cellBg = isToday ? "#FEF9EC" : isWeekend ? "#F8F9FB" : rowBg;
+          cellBg = isToday ? "#FEF9EC" : isWeekend ? "#BEBEBE" : rowBg;
           cellText = "#9CA3AF";
           cellMarker = "";
         }
@@ -894,7 +895,7 @@ function StaffRow({ person, days, year, month, r, idx, todayDay, onTooltip, even
         const clickable = isAdmin && !dispatch; // admin can edit non-dispatch cells
 
         return (
-          <td key={d} className="border-b border-r border-gray-300 text-center transition-colors p-0.5 relative select-none"
+          <td key={d} className="border-b border-r border-[#121212] text-center transition-colors p-0 relative select-none"
             style={{ minWidth: 28 }}
             onPointerDown={clickable ? (e) => onPointerDown(e, d, c) : undefined}
             onPointerEnter={() => onPointerEnter(c)}>
