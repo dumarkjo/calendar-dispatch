@@ -12,7 +12,7 @@ import {
 import {
   DocumentDispatchData, StaffMember,
   isLongTrip, formatDateRange, formatToday,
-  extractPersonnel, formatMachineList, getTransportFields,
+  extractPersonnel, formatMachineList,
 } from "../types";
 
 // ── Layout constants ──────────────────────────────────────────────────────────
@@ -27,20 +27,20 @@ const VALUE_W   = FORM_W - LABEL_W;
 
 // ── Border presets ────────────────────────────────────────────────────────────
 const NO_B  = { style: BorderStyle.NONE,   size: 0, color: "FFFFFF" };
-const TH_B  = { style: BorderStyle.SINGLE, size: 4, color: "000000" };
+const TH_B  = { style: BorderStyle.SINGLE, size: 6, color: "000000" };
 const NO_BS = { top: NO_B, bottom: NO_B, left: NO_B, right: NO_B };
 const TH_BS = { top: TH_B, bottom: TH_B, left: TH_B, right: TH_B };
-const BOT_B = { top: NO_B, bottom: TH_B, left: NO_B, right: NO_B };
+const BOT_B = { top: NO_B, bottom: { style: BorderStyle.SINGLE, size: 4, color: "000000" }, left: NO_B, right: NO_B };
 
-// ── Helpers ───────────────────────────────────────────────────────────────────
+// ── Text helper — Times New Roman, black, base 10pt (size 20) ────────────────
 function t(text: string, opts?: { bold?: boolean; size?: number; underline?: boolean }): TextRun {
   return new TextRun({
     text,
-    bold:      opts?.bold ?? false,
-    size:      opts?.size ?? 22,
+    bold:      opts?.bold      ?? false,
+    size:      opts?.size      ?? 20,
     font:      "Times New Roman",
-    color:     "000000",
     underline: opts?.underline ? {} : undefined,
+    color:     "000000",
   });
 }
 
@@ -83,13 +83,44 @@ function emptyTR(width: number): TableRow {
 function fieldRow(label: string, value: string): TableRow {
   return new TableRow({
     children: [
-      tc([pp(t(label, { size: 17 }))], LABEL_W, { borders: NO_BS, ml: 0 }),
-      tc([pp(t(value, { size: 17 }))], VALUE_W, { borders: BOT_B }),
+      tc([pp(t(label, { size: 19 }))], LABEL_W, { borders: NO_BS, ml: 0 }),
+      tc([pp(t(value, { size: 19 }))], VALUE_W, { borders: BOT_B }),
     ],
   });
 }
 
-// ── Build one complete form table (single column, FORM_W wide) ────────────────
+// ── Full-width date signature line: underline spanning label+value, "Date" centered below ──
+function dateLine(): TableRow[] {
+  return [
+    // Full-width underlined blank row (the line to write the date on)
+    new TableRow({ children: [
+      tc([emptyPara()], LABEL_W, { borders: NO_BS }),
+      tc([emptyPara()], VALUE_W, { borders: BOT_B }),
+    ]}),
+    // "Date" centered under the line
+    new TableRow({ children: [
+      tc([emptyPara()], LABEL_W, { borders: NO_BS }),
+      tc([pp(t("Date", { size: 18 }), { align: AlignmentType.CENTER })], VALUE_W, { borders: NO_BS }),
+    ]}),
+  ];
+}
+
+// ── Fajardo signature block (shared between short + long trip) ────────────────
+function fajardoBlock(): TableRow[] {
+  return [
+    new TableRow({ children: [tc([pp(t("ARTHUR L. FAJARDO, Ph.D.", { bold: true, size: 20, underline: true }))], FORM_W, { span: 2, borders: NO_BS })] }),
+    new TableRow({ children: [tc([pp(t("Director, AMTEC", { size: 19 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+    // dashed line under Director, AMTEC (matching original)
+    new TableRow({ children: [tc([
+      pp(t("─".repeat(68), { size: 12 }), { align: AlignmentType.LEFT }),
+    ], FORM_W, { span: 2, borders: NO_BS })] }),
+    emptyTR(FORM_W),
+    // full-width date line with centered "Date" label
+    ...dateLine(),
+  ];
+}
+
+// ── Build one complete form table (FORM_W wide) ───────────────────────────────
 function buildFormTable(
   person: StaffMember & { isLead: boolean },
   dispatch: DocumentDispatchData,
@@ -105,24 +136,25 @@ function buildFormTable(
   const today    = formatToday();
   const location = dispatch.testing_location || dispatch.company_name || "";
 
-  // Approval block rows
+  // Approval block
   const approvalRows: TableRow[] = longTrip
     ? [
-        new TableRow({ children: [tc([pp(t("NOTED BY:", { bold: true, size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        new TableRow({ children: [tc([pp(t("NOTED BY:", { bold: true, size: 20 }))], FORM_W, { span: 2, borders: NO_BS })] }),
         emptyTR(FORM_W), emptyTR(FORM_W),
-        new TableRow({ children: [tc([pp(t("ARTHUR L. FAJARDO, Ph.D.", { bold: true, size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
-        new TableRow({ children: [tc([pp(t("Director, AMTEC", { size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        ...fajardoBlock(),
         emptyTR(FORM_W),
-        new TableRow({ children: [tc([pp(t("APPROVED BY:", { bold: true, size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        new TableRow({ children: [tc([pp(t("APPROVED BY:", { bold: true, size: 20 }))], FORM_W, { span: 2, borders: NO_BS })] }),
         emptyTR(FORM_W), emptyTR(FORM_W),
-        new TableRow({ children: [tc([pp(t("MARION LUX Y. CASTRO", { bold: true, size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
-        new TableRow({ children: [tc([pp(t(person.isLead ? "Officer-in-charge, CEAT" : "OIC - Dean, CEAT", { size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        new TableRow({ children: [tc([pp(t("MARION LUX Y. CASTRO", { bold: true, size: 20, underline: true }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        new TableRow({ children: [tc([pp(t(person.isLead ? "Officer-in-charge, CEAT" : "OIC - Dean, CEAT", { size: 19 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        new TableRow({ children: [tc([pp(t("─".repeat(68), { size: 12 }), { align: AlignmentType.LEFT })], FORM_W, { span: 2, borders: NO_BS })] }),
+        emptyTR(FORM_W),
+        ...dateLine(),
       ]
     : [
-        new TableRow({ children: [tc([pp(t("APPROVED:", { bold: true, size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        new TableRow({ children: [tc([pp(t("APPROVED:", { bold: true, size: 20 }))], FORM_W, { span: 2, borders: NO_BS })] }),
         emptyTR(FORM_W), emptyTR(FORM_W),
-        new TableRow({ children: [tc([pp(t("ARTHUR L. FAJARDO, Ph.D.", { bold: true, size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
-        new TableRow({ children: [tc([pp(t("Director, AMTEC", { size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+        ...fajardoBlock(),
       ];
 
   return new Table({
@@ -132,20 +164,20 @@ function buildFormTable(
     rows: [
       // ── University header ───────────────────────────────────────────────
       new TableRow({ children: [tc([
-        pp(t("University of the Philippines Los Baños", { bold: true, size: 18 }), { align: AlignmentType.CENTER, after: 0 }),
-        pp(t("College, Laguna", { bold: true, size: 18 }), { align: AlignmentType.CENTER }),
+        pp(t("University of the Philippines Los Baños", { bold: true, size: 20 }), { align: AlignmentType.CENTER, after: 0 }),
+        pp(t("College, Laguna", { bold: true, size: 20 }), { align: AlignmentType.CENTER }),
       ], FORM_W, { span: 2, borders: TH_BS })] }),
 
       emptyTR(FORM_W),
 
-      // ── Initials, dispatch no, date ─────────────────────────────────────
+      // ── TR number (underlined) + TR. NO. label + date (underlined) + Date label
       new TableRow({ children: [
         tc([emptyPara()], LABEL_W, { borders: NO_BS }),
         tc([
-          pp(t(`${person.initials}  ${dispatch.dispatch_number ?? ""}`, { size: 17 })),
-          pp(t("TR. NO.", { size: 16 })),
-          pp(t(today, { size: 17 })),
-          pp(t("Date", { size: 16 })),
+          pp(t(`${person.initials}  ${dispatch.dispatch_number ?? ""}`, { size: 20, underline: true })),
+          pp(t("TR. NO.", { size: 18 })),
+          pp(t(today, { size: 20, underline: true })),
+          pp(t("Date", { size: 18 })),
         ], VALUE_W, { borders: NO_BS }),
       ]}),
 
@@ -159,7 +191,7 @@ function buildFormTable(
       fieldRow("Purpose of Travel:", purpose),
       new TableRow({ children: [
         tc([emptyPara()], LABEL_W, { borders: NO_BS }),
-        tc([pp(t(machines, { size: 16 }))], VALUE_W, { borders: NO_BS }),
+        tc([pp(t(machines, { size: 18 }))], VALUE_W, { borders: NO_BS }),
       ]}),
 
       emptyTR(FORM_W),
@@ -167,20 +199,20 @@ function buildFormTable(
 
       // ── Transport ───────────────────────────────────────────────────────
       new TableRow({ children: [
-        tc([pp(t("Transportation  :", { size: 17 }))], LABEL_W, { borders: NO_BS, ml: 0 }),
-        tc([pp(t(colV, { size: 17 }))], VALUE_W, { borders: NO_BS }),
+        tc([pp(t("Transportation  :", { size: 19 }))], LABEL_W, { borders: NO_BS, ml: 0 }),
+        tc([pp(t(colV, { size: 19 }))], VALUE_W, { borders: NO_BS }),
       ]}),
       new TableRow({ children: [
         tc([emptyPara()], LABEL_W, { borders: NO_BS }),
-        tc([pp(t(pubV, { size: 17 }))], VALUE_W, { borders: NO_BS }),
+        tc([pp(t(pubV, { size: 19 }))], VALUE_W, { borders: NO_BS }),
       ]}),
       new TableRow({ children: [
         tc([emptyPara()], LABEL_W, { borders: NO_BS }),
-        tc([pp(t(prvV, { size: 17 }))], VALUE_W, { borders: NO_BS }),
+        tc([pp(t(prvV, { size: 19 }))], VALUE_W, { borders: NO_BS }),
       ]}),
 
       // ── Expected Time of Arrival ────────────────────────────────────────
-      new TableRow({ children: [tc([pp(t("Expected Time of Arrival", { bold: true, size: 17 }))], FORM_W, { span: 2, borders: NO_BS })] }),
+      new TableRow({ children: [tc([pp(t("Expected Time of Arrival", { bold: true, size: 20 }))], FORM_W, { span: 2, borders: NO_BS })] }),
       fieldRow("AT Destination       :", ""),
       fieldRow("FROM Destination :", ""),
 
@@ -191,36 +223,35 @@ function buildFormTable(
 
       // ── Dashed divider ──────────────────────────────────────────────────
       new TableRow({ children: [tc([
-        pp(t("─".repeat(72), { size: 14 }), { align: AlignmentType.CENTER }),
+        pp(t("─".repeat(68), { size: 14 }), { align: AlignmentType.CENTER }),
       ], FORM_W, { span: 2, borders: NO_BS })] }),
 
       // ── Certification stub ──────────────────────────────────────────────
       new TableRow({ children: [
         tc([emptyPara()], LABEL_W, { borders: NO_BS }),
-        tc([pp(t("Date", { size: 17 }))], VALUE_W, { borders: NO_BS }),
+        tc([pp(t("Date", { size: 19 }))], VALUE_W, { borders: NO_BS }),
       ]}),
 
       new TableRow({ children: [tc([pp([
-        t("This is to certify that ", { size: 17 }),
-        t(person.full_name, { bold: true, size: 17, underline: true }),
-        t(" was here in ______________________________", { size: 17 }),
+        t("This is to certify that ", { size: 19 }),
+        t(person.full_name, { bold: true, size: 19, underline: true }),
+        t(" was here in ______________________________", { size: 19 }),
       ])], FORM_W, { span: 2, borders: NO_BS })] }),
 
       emptyTR(FORM_W),
 
       new TableRow({ children: [tc([
-        pp(t("(name and address of agency)", { size: 16 }), { align: AlignmentType.CENTER }),
+        pp(t("(name and address of agency)", { size: 18 }), { align: AlignmentType.CENTER }),
       ], FORM_W, { span: 2, borders: NO_BS })] }),
 
       new TableRow({ children: [
-        tc([pp(t("on", { size: 17 }))], 300, { borders: NO_BS, ml: 0 }),
+        tc([pp(t("on", { size: 19 }))], 300, { borders: NO_BS, ml: 0 }),
         tc([emptyPara()], 2000, { borders: BOT_B }),
-        tc([pp(t("in connection with", { size: 17 }))], FORM_W - 2300, { borders: NO_BS }),
+        tc([pp(t("in connection with", { size: 19 }))], FORM_W - 2300, { borders: NO_BS }),
       ]}),
-
       new TableRow({ children: [
         tc([emptyPara()], 300, { borders: NO_BS }),
-        tc([pp(t("(date of visit)", { size: 16 }), { align: AlignmentType.CENTER })], 2000, { borders: NO_BS }),
+        tc([pp(t("(date of visit)", { size: 18 }), { align: AlignmentType.CENTER })], 2000, { borders: NO_BS }),
         tc([emptyPara()], FORM_W - 2300, { borders: NO_BS }),
       ]}),
 
@@ -228,13 +259,13 @@ function buildFormTable(
 
       new TableRow({ children: [tc([emptyPara()], FORM_W, { span: 2, borders: BOT_B })] }),
       new TableRow({ children: [tc([
-        pp(t("(nature of business)", { size: 16 }), { align: AlignmentType.CENTER }),
+        pp(t("(nature of business)", { size: 18 }), { align: AlignmentType.CENTER }),
       ], FORM_W, { span: 2, borders: NO_BS })] }),
 
       emptyTR(FORM_W),
 
       new TableRow({ children: [tc([pp(
-        t("This certification is issued in accordance with the Joint COA-DBM Circular 86-1, Nov. 12, 1986.", { size: 16 })
+        t("This certification is issued in accordance with the Joint COA-DBM Circular 86-1, Nov. 12, 1986.", { size: 18 })
       )], FORM_W, { span: 2, borders: NO_BS })] }),
 
       emptyTR(FORM_W),
@@ -246,7 +277,7 @@ function buildFormTable(
       ]}),
       new TableRow({ children: [
         tc([emptyPara()], LABEL_W + 300, { borders: NO_BS }),
-        tc([pp(t("Signature over printed Name", { size: 16 }))], VALUE_W - 300, { borders: NO_BS }),
+        tc([pp(t("Signature over printed Name", { size: 18 }))], VALUE_W - 300, { borders: NO_BS }),
       ]}),
       emptyTR(FORM_W),
       new TableRow({ children: [
@@ -255,7 +286,7 @@ function buildFormTable(
       ]}),
       new TableRow({ children: [
         tc([emptyPara()], LABEL_W + 300, { borders: NO_BS }),
-        tc([pp(t("Designation", { size: 16 }))], VALUE_W - 300, { borders: NO_BS }),
+        tc([pp(t("Designation", { size: 18 }))], VALUE_W - 300, { borders: NO_BS }),
       ]}),
     ],
   });
@@ -313,7 +344,6 @@ export async function generateTravelRequest(dispatch: DocumentDispatchData): Pro
     isLead: p.assignment_type === "lead_engineer",
   }));
 
-  // One section per person = one page per person
   const sections = personnel.map((person, idx) => ({
     properties: {
       page: {

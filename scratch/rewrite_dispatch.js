@@ -1,4 +1,6 @@
-// -----------------------------------------------------------------------------
+const fs = require("fs");
+
+const newCode = `// -----------------------------------------------------------------------------
 // lib/documents/generators/dispatch-form.ts
 // Generates the official AMTEC Dispatch Form as DOCX
 // -----------------------------------------------------------------------------
@@ -41,7 +43,7 @@ function txt(text: string, opts?: { bold?: boolean; size?: number; font?: string
 function p(text: string | TextRun[], opts?: { align?: (typeof AlignmentType)[keyof typeof AlignmentType]; bold?: boolean; color?: string; size?: number; before?: number; after?: number }) {
   let runs: TextRun[];
   if (typeof text === "string") {
-    runs = text.split("\n").flatMap((line, i, arr) => 
+    runs = text.split("\\n").flatMap((line, i, arr) => 
       i === arr.length - 1 ? [txt(line, opts)] : [txt(line, opts), new TextRun({ break: 1 })]
     );
   } else {
@@ -96,10 +98,10 @@ export async function generateDispatchForm(dispatch: DocumentDispatchData): Prom
   const machines    = dispatch.dispatch_machines ?? [];
   const itinerary   = dispatch.dispatch_itinerary ?? [];
 
-  const engineerNames   = engineers.map(e => e.full_name).join(", ") || "ï¿½";
-  const technicianNames = technicians.map(t => t.full_name).join(", ") || "ï¿½";
+  const engineerNames   = engineers.map(e => e.full_name).join(", ") || "—";
+  const technicianNames = technicians.map(t => t.full_name).join(", ") || "—";
   const dateRange       = formatDateRange(dispatch.date_from, dispatch.date_to);
-  const location        = dispatch.testing_location || dispatch.company_name || "ï¿½";
+  const location        = dispatch.testing_location || dispatch.company_name || "—";
   
   const isPub  = dispatch.transport_mode === "public_conveyance";
   const isAppl = dispatch.transport_mode === "test_applicant_vehicle";
@@ -177,9 +179,9 @@ export async function generateDispatchForm(dispatch: DocumentDispatchData): Prom
   rows.push(new TableRow({ children: [
     labelCell("Travel Itinerary:", 15, { rowSpan: 8 }),
     headerCell("Date", 5, { rowSpan: 2 }),
-    headerCell("Per Diem\n(Check (/) if provided by Test Applicant, otherwise cross mark (X). NA if not applicable)", 13),
-    headerCell("Time of Travel\n(00:00 to 00:00)", 9, { rowSpan: 2 }),
-    headerCell("Working/Productive Hours\n(00:00 to 00:00)", 9, { rowSpan: 2 }),
+    headerCell("Per Diem\\n(Check (/) if provided by Test Applicant, otherwise cross mark (X). NA if not applicable)", 13),
+    headerCell("Time of Travel\\n(00:00 to 00:00)", 9, { rowSpan: 2 }),
+    headerCell("Working/Productive Hours\\n(00:00 to 00:00)", 9, { rowSpan: 2 }),
     headerCell("Overtime hours", 9)
   ]}));
 
@@ -283,7 +285,7 @@ export async function generateDispatchForm(dispatch: DocumentDispatchData): Prom
 
   // Row 51: Footer
   rows.push(new TableRow({ children: [
-    cell([p("AMTEC-OP-F4, \"Dispatch Form\"", { size: 14, before: 0, after: 0 })], 30, { borders: { ...ALL_BORDERS, bottom: NO_BORDER, left: NO_BORDER } }),
+    cell([p("AMTEC-OP-F4, \\"Dispatch Form\\"", { size: 14, before: 0, after: 0 })], 30, { borders: { ...ALL_BORDERS, bottom: NO_BORDER, left: NO_BORDER } }),
     cell([p("Date of Revision: 11/20/2024", { size: 14, align: AlignmentType.RIGHT, before: 0, after: 0 })], 30, { borders: { ...ALL_BORDERS, bottom: NO_BORDER, right: NO_BORDER } })
   ]}));
 
@@ -308,3 +310,7 @@ export async function generateDispatchForm(dispatch: DocumentDispatchData): Prom
 
   return Packer.toBuffer(doc);
 }
+`;
+
+fs.writeFileSync("lib/documents/generators/dispatch-form.ts", newCode);
+console.log("Done");
