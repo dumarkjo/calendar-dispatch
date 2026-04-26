@@ -57,7 +57,7 @@ function p(text: string | TextRun | TextRun[], opts?: { align?: (typeof Alignmen
 }
 
 function cell(
-  children: Paragraph[],
+  children: (Paragraph | Table)[], 
   units: number, 
   opts?: {
     borders?: any;
@@ -237,13 +237,13 @@ export async function generateAcceptanceForm(dispatch: DocumentDispatchData): Pr
     cell([
       p(txt("Issued by:", { bold: true }), { before: 20 }),
       p("", { before: 600 }), // Spacer
-      new Paragraph({ children: [sigTable("SAL Staff") as unknown as TextRun] }) // Render nested table
+      sigTable("SAL Staff") // Pass Table directly
     ], 30, { verticalAlign: VerticalAlign.TOP }),
     
     cell([
       p(txt("Duly signed by:", { bold: true }), { before: 20 }),
       p("", { before: 600 }), // Spacer
-      new Paragraph({ children: [sigTable("Test Engineer /Representative") as unknown as TextRun] })
+      sigTable("Test Engineer /Representative") // Pass Table directly
     ], 30, { verticalAlign: VerticalAlign.TOP })
   ]}));
 
