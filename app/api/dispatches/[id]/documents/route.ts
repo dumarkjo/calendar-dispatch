@@ -35,7 +35,7 @@ export async function GET(
       *,
       dispatch_assignments (
         id, staff_id, profile_id, assignment_type, is_override, override_reason,
-        staff ( full_name, initials, designation )
+        staff ( full_name, initials, designation, email )
       ),
       dispatch_instruments ( * ),
       dispatch_itinerary   ( * ),
@@ -80,12 +80,18 @@ export async function GET(
   const acceptanceFormName = `Acceptance_Form_${safeNum}.docx`;
 
   // ── Send email with all 3 attachments ─────────────────────────────────────
-  const recipientEmail = process.env.DOCUMENTS_RECIPIENT_EMAIL ?? "mjcruz0319@gmail.com";
+  const baseRecipient = process.env.DOCUMENTS_RECIPIENT_EMAIL ?? "mjcruz0319@gmail.com";
+  
+  const assignedEmails = (dispatch.dispatch_assignments ?? [])
+    .map((a: any) => a.staff?.email)
+    .filter((email: any) => typeof email === "string" && email.includes("@"));
+    
+  const allRecipients = Array.from(new Set([baseRecipient, ...assignedEmails]));
 
   try {
     await resend.emails.send({
       from: "AMTEC Dispatch <onboarding@resend.dev>",
-      to:   [recipientEmail],
+      to:   allRecipients,
       subject: `AMTEC Documents — ${dispatchNumber}`,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px;">
@@ -119,7 +125,7 @@ export async function GET(
   return NextResponse.json({
     success:      true,
     dispatchNumber,
-    emailSentTo:  recipientEmail,
+    emailSentTo:  allRecipients.join(", "),
     documents: {
       dispatchForm: {
         filename: dispatchFormName,
