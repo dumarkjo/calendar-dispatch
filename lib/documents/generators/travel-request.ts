@@ -221,16 +221,7 @@ function buildFormTable(
       // ── Approval block ──────────────────────────────────────────────────
       ...approvalRows,
 
-      // ── Dashed divider ──────────────────────────────────────────────────
-      new TableRow({ children: [tc([
-        pp(t("─".repeat(68), { size: 14 }), { align: AlignmentType.CENTER }),
-      ], FORM_W, { span: 2, borders: NO_BS })] }),
-
-      // ── Certification stub ──────────────────────────────────────────────
-      new TableRow({ children: [
-        tc([emptyPara()], LABEL_W, { borders: NO_BS }),
-        tc([pp(t("Date", { size: 19 }))], VALUE_W, { borders: NO_BS }),
-      ]}),
+      // ── Certification stub text starts here ────────────────────────────
 
       new TableRow({ children: [tc([pp([
         t("This is to certify that ", { size: 19 }),
