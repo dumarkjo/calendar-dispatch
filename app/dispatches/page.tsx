@@ -354,7 +354,6 @@ export default function DispatchListPage() {
                       ?.filter((a) => a.assignment_type === "technician")
                       .map((a) => a.staff?.initials ?? "?")
                       .join(", ") || "—";
-                    const isExporting = exportingId === d.id;
                     return (
                       <tr key={d.id}
                         className="hover:bg-blue-50 cursor-pointer transition-colors"
