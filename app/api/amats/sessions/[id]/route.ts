@@ -43,6 +43,7 @@ export async function PUT(
     machine_name_or_code,
     date_from,
     date_to,
+    status,
     notes,
     selected_tests,
     engineers,
@@ -57,6 +58,7 @@ export async function PUT(
       machine_name_or_code: machine_name_or_code || null,
       date_from,
       date_to,
+      status: status || undefined,
       notes: notes || null,
       updated_at: new Date().toISOString(),
     })
