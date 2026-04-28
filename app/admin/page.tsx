@@ -208,7 +208,7 @@ export default function AdminPage() {
                   placeholder="e.g. Juan Dela Cruz"
                   value={form.full_name}
                   onChange={e => setForm(f => ({ ...f, full_name: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20 placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -219,7 +219,7 @@ export default function AdminPage() {
                   placeholder="e.g. Dela Cruz"
                   value={form.surname}
                   onChange={e => setForm(f => ({ ...f, surname: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20 placeholder:text-gray-500"
                   required
                 />
               </div>
@@ -230,7 +230,7 @@ export default function AdminPage() {
                   placeholder="e.g. JDC"
                   value={form.initials}
                   onChange={e => setForm(f => ({ ...f, initials: e.target.value.toUpperCase() }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20 uppercase"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20 uppercase placeholder:text-gray-500"
                   maxLength={6}
                   required
                 />
@@ -253,7 +253,7 @@ export default function AdminPage() {
                   placeholder="e.g. Agricultural Engineer I"
                   value={form.designation}
                   onChange={e => setForm(f => ({ ...f, designation: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20 placeholder:text-gray-500"
                 />
               </div>
               <div>
@@ -263,7 +263,7 @@ export default function AdminPage() {
                   placeholder="e.g. jdelacruz@amtec.gov.ph"
                   value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20"
+                  className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#1B2A6B]/20 placeholder:text-gray-500"
                 />
               </div>
 
