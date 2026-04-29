@@ -86,7 +86,7 @@ export async function GET(
   // assigned personnel in the email body so the admin can forward accordingly.
   // To send directly to engineer emails, verify a domain in Resend and update
   // the `from` address to e.g. "dispatch@yourdomain.com".
-  const baseRecipient = process.env.DOCUMENTS_RECIPIENT_EMAIL ?? "mjcruz0319@gmail.com";
+  const baseRecipient = process.env.DOCUMENTS_RECIPIENT_EMAIL ?? "teidd.amtec.uplb@up.edu.ph";
 
   const assignedPersonnel = (dispatch.dispatch_assignments ?? [])
     .filter((a: any) => a.staff)
