@@ -108,6 +108,7 @@ export default function DashboardPage() {
   const supabase = useMemo(() => supabaseBrowser(), []);
 
   const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const [role, setRole] = useState("");
   const [dispatches, setDispatches] = useState<Dispatch[]>([]);
   const [amatsSessions, setAmatsSessions] = useState<AmatsSession[]>([]);
@@ -130,6 +131,7 @@ export default function DashboardPage() {
       });
       const meData = await meRes.json();
       setRole(meData.profile?.role ?? "");
+      setFullName(meData.profile?.full_name ?? "");
 
       const { data: session } = await supabase.auth.getSession();
       const token = session.session?.access_token;
@@ -233,7 +235,7 @@ export default function DashboardPage() {
               Dashboard
             </p>
             <h1 className="text-2xl font-black text-gray-900">
-              Welcome back, {email ? email.split("@")[0] : ""}
+              Welcome back, {fullName || (email ? email.split("@")[0] : "")}
             </h1>
             <p className="text-sm text-gray-500 mt-0.5 capitalize">Role: {role || "—"}</p>
           </div>

@@ -10,15 +10,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = useMemo(() => supabaseBrowser(), []);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("");
+  const [fullName, setFullName] = useState("");
   const [ready, setReady] = useState(false);
-  const [collapsed, setCollapsed] = useState(true); // Default to collapsed for mobile-first
-
-  useEffect(() => {
-    // Expand on desktop by default
-    if (window.innerWidth >= 768) {
-      setCollapsed(false);
-    }
-  }, []);
+  const [collapsed, setCollapsed] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return window.innerWidth < 768;
+  });
 
   useEffect(() => {
     async function load() {
@@ -31,7 +28,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         body: JSON.stringify({ userId: data.user.id }),
       });
       const out = await res.json();
+      if (!out.profile?.active) {
+        await supabase.auth.signOut();
+        router.push("/login");
+        return;
+      }
+
       setRole(out.profile?.role ?? "");
+      setFullName(out.profile?.full_name ?? "");
       setReady(true);
     }
     load();
@@ -51,7 +55,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen" style={{ background: "#F4F6FB", ...cssVars }}>
-      <Sidebar email={email} role={role} collapsed={collapsed} onToggle={() => setCollapsed(c => !c)} />
+      <Sidebar
+        email={email}
+        fullName={fullName}
+        role={role}
+        collapsed={collapsed}
+        onToggle={() => setCollapsed(c => !c)}
+      />
       <main className={`flex-1 flex flex-col min-h-screen transition-all duration-300 w-full max-w-full overflow-x-hidden ${collapsed ? "md:ml-[72px]" : "md:ml-[256px]"}`}>
         
         {/* Mobile Header */}

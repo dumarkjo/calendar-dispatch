@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { supabaseBrowser } from "@/lib/supabase/client";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getThemeForRole } from "@/lib/theme";
+import { ACCOUNT_VERIFIER_EMAIL, isVerifierEmail } from "@/lib/auth/constants";
 
 const BASE_NAV = [
   { href: "/dashboard", label: "Dashboard", icon: "⊞" },
@@ -11,6 +12,7 @@ const BASE_NAV = [
   { href: "/calendar", label: "My Calendar", icon: "📅" },
   { href: "/calendar-view", label: "Public Calendar", icon: "🌐" },
   { href: "/workload-view", label: "Workload", icon: "📊" },
+  { href: "/account", label: "Account Settings", icon: "⚙" },
 ];
 
 const ADMIN_NAV = [
@@ -19,6 +21,7 @@ const ADMIN_NAV = [
   { href: "/workload-view", label: "Workload", icon: "📊" },
   { href: "/dispatch/new", label: "New Dispatch", icon: "＋" },
   { href: "/admin", label: "Admin Panel", icon: "🛡️" },
+  { href: "/account", label: "Account Settings", icon: "⚙" },
 ];
 
 const AMATS_NAV = [
@@ -27,24 +30,27 @@ const AMATS_NAV = [
   { href: "/workload-view", label: "Workload", icon: "📊" },
   { href: "/amats/new", label: "New Testing Form", icon: "＋" },
   { href: "/admin", label: "Admin Panel", icon: "🛡️" },
+  { href: "/account", label: "Account Settings", icon: "⚙" },
 ];
 
 type PendingUser = { id: string; full_name: string; role: string; email?: string };
 
 type SidebarProps = {
   email: string;
+  fullName: string;
   role: string;
   collapsed: boolean;
   onToggle: () => void;
 };
 
-export default function Sidebar({ email, role, collapsed, onToggle }: SidebarProps) {
+export default function Sidebar({ email, fullName, role, collapsed, onToggle }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const supabase = useMemo(() => supabaseBrowser(), []);
   const theme = getThemeForRole(role);
 
   const isManager = role === "admin_scheduler" || role === "AMaTS";
+  const canVerifyAccounts = isVerifierEmail(email);
   const NAV = role === "admin_scheduler" ? ADMIN_NAV : role === "AMaTS" ? AMATS_NAV : BASE_NAV;
 
   const [pending, setPending] = useState<PendingUser[]>([]);
@@ -52,7 +58,7 @@ export default function Sidebar({ email, role, collapsed, onToggle }: SidebarPro
   const [activating, setActivating] = useState<string | null>(null);
 
   const fetchPending = useCallback(async () => {
-    if (!isManager) return;
+    if (!isManager || !canVerifyAccounts) return;
     const { data: session } = await supabase.auth.getSession();
     const token = session.session?.access_token;
     if (!token) return;
@@ -64,9 +70,14 @@ export default function Sidebar({ email, role, collapsed, onToggle }: SidebarPro
       const users = await res.json();
       setPending(users.filter((u: PendingUser & { active?: boolean }) => !u.active));
     } catch { /* ignore */ }
-  }, [isManager, supabase]);
+  }, [canVerifyAccounts, isManager, supabase]);
 
-  useEffect(() => { fetchPending(); }, [fetchPending]);
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      void fetchPending();
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [fetchPending]);
 
   async function activateUser(id: string) {
     setActivating(id);
@@ -160,7 +171,7 @@ export default function Sidebar({ email, role, collapsed, onToggle }: SidebarPro
       </nav>
 
       {/* ── Pending Activations Notification ── */}
-      {isManager && pending.length > 0 && (
+      {isManager && canVerifyAccounts && pending.length > 0 && (
         <div className="px-2 pb-2">
           {collapsed ? (
             /* Collapsed: just a badge dot */
@@ -229,7 +240,20 @@ export default function Sidebar({ email, role, collapsed, onToggle }: SidebarPro
       <div className="px-3 py-3 border-t" style={{ borderColor: `${theme.accent}4D` }}>
         {!collapsed && (
           <div className="mb-2 px-1">
+            {fullName && (
+              <p className="text-xs font-semibold truncate text-white">{fullName}</p>
+            )}
             <p className="text-xs font-semibold truncate" style={{ color: theme.accent }}>{email}</p>
+            {isManager && canVerifyAccounts && (
+              <p className="text-[10px] mt-1 uppercase tracking-wide" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Account verifier
+              </p>
+            )}
+            {isManager && !canVerifyAccounts && (
+              <p className="text-[10px] mt-1" style={{ color: "rgba(255,255,255,0.5)" }}>
+                Verifier: {ACCOUNT_VERIFIER_EMAIL}
+              </p>
+            )}
           </div>
         )}
         <button onClick={logout}

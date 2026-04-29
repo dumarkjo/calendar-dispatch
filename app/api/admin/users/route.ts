@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth/requireAccess'
+import { isVerifierEmail } from '@/lib/auth/constants'
 
 export async function GET(req: Request) {
   const auth = await requireRole(req, 'admin_scheduler', 'AMaTS')
   if (!auth.ok) return auth.response
+  if (!isVerifierEmail(auth.data.user.email)) {
+    return NextResponse.json({ error: 'Only the designated verifier can review signup requests.' }, { status: 403 })
+  }
 
   // Fetch profiles
   const { data: users, error } = await supabaseAdmin

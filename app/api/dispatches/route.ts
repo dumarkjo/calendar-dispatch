@@ -5,6 +5,44 @@ import { getAuthUser, requireRole } from "@/lib/auth/requireAccess";
 // ─── Dispatch status helper ──────────────────────────────────────────────────
 const MANUAL_STATUSES = new Set(["Re-scheduled", "Cancelled"]);
 
+type DispatchListRow = {
+  id: string;
+  dispatch_number: string | null;
+  company_name: string | null;
+  date_from: string | null;
+  date_to: string | null;
+  transport_mode: string | null;
+  created_at: string;
+  type: string | null;
+  location: string | null;
+  status: string | null;
+  lab: string | null;
+  contact_person: string | null;
+  contact_number: string | null;
+  testing_location: string | null;
+  notes: string | null;
+  created_by_role: string | null;
+  dispatch_assignments: unknown[];
+  dispatch_machines: unknown[];
+};
+
+type DispatchInstrumentInput = {
+  instrument_name: string | null;
+  code_brand_model: string | null;
+  before_travel: string | null;
+  remarks: string | null;
+};
+
+type DispatchMachineInput = {
+  tam_no: string | null;
+  machine: string | null;
+  brand: string | null;
+  model: string | null;
+  serial_no: string | null;
+  date_of_test?: string | null;
+  status?: string | null;
+};
+
 function computeStatus(dateFrom: string | null, dateTo: string | null, stored?: string): string {
   if (stored && MANUAL_STATUSES.has(stored)) return stored;
   if (!dateFrom || !dateTo) return stored || "Pending";
@@ -22,10 +60,7 @@ export async function GET(req: Request) {
   const auth = await getAuthUser(req);
   if (!auth.ok) return auth.response;
 
-  const { profile } = auth.data;
-  const isManager = ["admin_scheduler", "AMaTS"].includes(profile.role);
-
-  let query = supabaseAdmin
+  const query = supabaseAdmin
     .from("dispatches")
     .select(`
       id, dispatch_number, company_name, date_from, date_to,
@@ -36,27 +71,11 @@ export async function GET(req: Request) {
     `)
     .order("created_at", { ascending: false });
 
-  if (!isManager) {
-    // Non-managers only see dispatches they are assigned to
-    const { data: assignments } = await supabaseAdmin
-      .from("dispatch_assignments")
-      .select("dispatch_id")
-      .eq("profile_id", profile.id);
-
-    const uniqueIds = [...new Set((assignments ?? []).map((r) => r.dispatch_id))];
-
-    if (uniqueIds.length === 0) {
-      return NextResponse.json({ dispatches: [], noAssignments: true });
-    }
-
-    query = query.in("id", uniqueIds);
-  }
-
   const { data: dispatches, error } = await query;
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   // Live-recompute statuses based on current date
-  const liveDispatches = (dispatches ?? []).map((d: any) => ({
+  const liveDispatches = ((dispatches ?? []) as DispatchListRow[]).map((d) => ({
     ...d,
     status: computeStatus(d.date_from, d.date_to, d.status),
   }));
@@ -152,7 +171,7 @@ export async function POST(req: Request) {
     const { error: instErr } = await supabaseAdmin
       .from("dispatch_instruments")
       .insert(
-        instruments.map((inst: any) => ({
+        instruments.map((inst: DispatchInstrumentInput) => ({
           dispatch_id: dispatchId,
           instrument_name: inst.instrument_name,
           code_brand_model: inst.code_brand_model,
@@ -168,7 +187,7 @@ export async function POST(req: Request) {
     const { error: machErr } = await supabaseAdmin
       .from("dispatch_machines")
       .insert(
-        machines.map((m: any) => ({
+        machines.map((m: DispatchMachineInput) => ({
           dispatch_id: dispatchId,
           tam_no: m.tam_no,
           machine: m.machine,

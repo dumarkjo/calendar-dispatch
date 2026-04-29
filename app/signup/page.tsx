@@ -1,7 +1,6 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
 import { supabaseBrowser } from "@/lib/supabase/client";
 
 type Role = "admin_scheduler" | "AMaTS";
@@ -66,10 +65,14 @@ export default function SignupPage() {
     setLoading(false);
 
     if (!res.ok) {
+    await supabase.auth.signOut();
     setMsgType("error");
     setMsg(data.error ?? "Signup failed. Please try again.");
     return;
     }
+
+    // Prevent newly created inactive users from staying signed in.
+    await supabase.auth.signOut();
 
     setMsgType("success");
     setMsg("Account created! Please wait for an admin to activate your account before logging in.");

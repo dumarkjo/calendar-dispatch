@@ -1,10 +1,14 @@
 import { NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase/admin'
 import { requireRole } from '@/lib/auth/requireAccess'
+import { isVerifierEmail } from '@/lib/auth/constants'
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireRole(req, 'admin_scheduler', 'AMaTS')
   if (!auth.ok) return auth.response
+  if (!isVerifierEmail(auth.data.user.email)) {
+    return NextResponse.json({ error: 'Only the designated verifier can activate or update signup accounts.' }, { status: 403 })
+  }
 
   const { id } = await params
   const body = await req.json()
@@ -33,6 +37,9 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireRole(req, 'admin_scheduler', 'AMaTS')
   if (!auth.ok) return auth.response
+  if (!isVerifierEmail(auth.data.user.email)) {
+    return NextResponse.json({ error: 'Only the designated verifier can delete signup accounts.' }, { status: 403 })
+  }
 
   const { id } = await params
 
